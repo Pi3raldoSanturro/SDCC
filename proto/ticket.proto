@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package ticket;
+
+option go_package = "ticket-service/proto;ticket";
+
+
+service TicketService {
+  rpc Ping (PingRequest) returns (PingResponse);
+  rpc ListEvents (ListEventsRequest) returns (ListEventsResponse);
+  rpc PurchaseTicket (PurchaseTicketRequest) returns (PurchaseTicketResponse);
+  rpc AddEvent(AddEventRequest) returns (AddEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+}
+
+message PingRequest {}
+message PingResponse {
+  string message = 1;
+}
+
+message ListEventsRequest {}
+
+message Event {
+  string id = 1;
+  string name = 2;
+  string date = 3;
+  int32 availableTickets = 4;
+}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message PurchaseTicketRequest {
+  string eventId = 1;
+  int32 quantity = 2;
+  string userId = 3;
+
+}
+
+message PurchaseTicketResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+
+message AddEventRequest {
+  string userId = 1;
+  string name = 2;
+  string date = 3;
+  int32 availableTickets = 4;
+}
+
+message AddEventResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DeleteEventRequest {
+  string userId = 1;
+  string eventId = 2;
+}
+
+message DeleteEventResponse {
+  bool success = 1;
+  string message = 2;
+}

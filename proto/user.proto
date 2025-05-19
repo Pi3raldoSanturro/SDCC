@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "user-service/proto/user";
+
+service UserService {
+  rpc Ping (PingRequest) returns (PingResponse);
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc GetUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
+}
+
+message PingRequest {}
+message PingResponse {
+  string message = 1;
+}
+
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+  string role = 3; // "user" o "admin"
+}
+
+message RegisterResponse {
+  string userId = 1;
+  string message = 2;
+  string token = 3;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string userId = 1;
+  bool success = 2;
+  string message = 3;
+  string role = 4;
+  string token = 5;
+}
+
+message GetUserByIdRequest {
+  string userId = 1;
+}
+
+message GetUserByIdResponse {
+  string userId = 1;
+  string username = 2;
+  string role = 3;
+}

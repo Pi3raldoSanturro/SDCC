@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  mongo-user:
+    image: mongo
+    container_name: mongo-user
+    ports:
+      - "27017:27017"
+    networks:
+      - sdcc_net
+
+  mongo-ticket:
+    image: mongo
+    container_name: mongo-ticket
+    ports:
+      - "27018:27017"
+    networks:
+      - sdcc_net
+
+  mongo-payment:
+    image: mongo
+    container_name: mongo-payment
+    ports:
+      - "27019:27017"
+    networks:
+      - sdcc_net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - sdcc_net
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "50051:50051"
+    networks:
+      - sdcc_net
+    depends_on:
+      - mongo-user
+      - rabbitmq
+
+  ticket-service:
+    build: ./ticket-service
+    ports:
+      - "50052:50052"
+    networks:
+      - sdcc_net
+    depends_on:
+      - mongo-ticket
+      - rabbitmq
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "50053:50053"
+    networks:
+      - sdcc_net
+    depends_on:
+      - mongo-payment
+      - rabbitmq
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "50054:50054"
+    networks:
+      - sdcc_net
+    depends_on:
+      - rabbitmq
+
+  web-ui:
+    build: ./web-ui
+    ports:
+      - "8080:8080"
+    networks:
+      - sdcc_net
+    depends_on:
+      - user-service
+      - ticket-service
+      - payment-service
+      - auth-service
+    volumes:
+      - ./proto:/app/proto
+
+
+networks:
+  sdcc_net:
+    driver: bridge
+

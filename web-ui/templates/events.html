@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Eventi Disponibili</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #fbc2eb, #a6c1ee);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 15px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 14px;
+            text-align: left;
+        }
+
+        th {
+            background: linear-gradient(to right, #36d1dc, #5b86e5);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .btn {
+            background: linear-gradient(to right, #36d1dc, #5b86e5);
+            border: none;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to right, #5b86e5, #36d1dc);
+        }
+
+        .btn-block {
+            display: inline-block;
+            margin: 10px 5px 0 0;
+        }
+
+        .flash-messages {
+            color: red;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .actions {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 30px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .home-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎫 Eventi Disponibili</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% if eventi %}
+    <table>
+        <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Data</th>
+            <th>Biglietti</th>
+            <th>ID</th>
+            <th>Azione</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for ev in eventi %}
+        <tr>
+            <td>{{ ev.name }}</td>
+            <td>{{ ev.date }}</td>
+            <td>{{ ev.availableTickets }}</td>
+            <td>{{ ev.id }}</td>
+            <td><a class="btn" href="/buy/{{ ev.id }}">Acquista</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center;">Nessun evento disponibile.</p>
+    {% endif %}
+
+    {% if session.get("role") == "admin" %}
+    <div class="actions">
+        <a class="btn btn-block" href="/add-event">➕ Aggiungi Evento</a>
+        <a class="btn btn-block" href="/delete-event">🗑️ Cancella Evento</a>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a class="home-link" href="/">🏠 Torna alla Home</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  mongo-user:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - sdcc_net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  mongo-ticket:
+    image: mongo
+    ports:
+      - "27018:27017"
+    networks:
+      - sdcc_net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  mongo-payment:
+    image: mongo
+    ports:
+      - "27019:27017"
+    networks:
+      - sdcc_net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - sdcc_net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  user-service:
+    image: user-service:latest
+    ports:
+      - "50051:50051"
+    networks:
+      - sdcc_net
+    depends_on:
+      - mongo-user
+      - rabbitmq
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  ticket-service:
+    image: ticket-service:latest
+    ports:
+      - "50052:50052"
+    networks:
+      - sdcc_net
+    depends_on:
+      - mongo-ticket
+      - rabbitmq
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+
+  payment-service:
+    image: payment-service:latest
+    ports:
+      - "50053:50053"
+    networks:
+      - sdcc_net
+    depends_on:
+      - mongo-payment
+      - rabbitmq
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  auth-service:
+    image: auth-service:latest
+    ports:
+      - "50054:50054"
+    networks:
+      - sdcc_net
+    depends_on:
+      - rabbitmq
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+networks:
+  sdcc_net:
+    driver: overlay
+    attachable: true

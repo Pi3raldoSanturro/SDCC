@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "payment-service/proto;payment";
+
+
+service PaymentService {
+  rpc Ping (PingRequest) returns (PingResponse);
+  rpc ProcessPayment (PaymentRequest) returns (PaymentResponse);
+}
+
+message PingRequest {}
+message PingResponse {
+  string message = 1;
+}
+
+message PaymentRequest {
+  string userId = 1;
+  double amount = 2;
+}
+
+message PaymentResponse {
+  bool success = 1;
+  string transactionId = 2;
+  string message = 3;
+}
