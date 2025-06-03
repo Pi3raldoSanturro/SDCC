@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var jwtKey = []byte("secret") // 🔐 Usa un env var in produzione
+var jwtKey = []byte("secret")
 
 type CustomClaims struct {
 	UserID   string `json:"userId"`

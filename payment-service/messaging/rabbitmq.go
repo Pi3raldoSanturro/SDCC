@@ -25,11 +25,11 @@ func CreateChannel(conn *amqp091.Connection) *amqp091.Channel {
 func DeclareQueue(ch *amqp091.Channel, queueName string) {
 	_, err := ch.QueueDeclare(
 		queueName,
-		true,  // durable
-		false, // auto-delete
-		false, // exclusive
-		false, // no-wait
-		nil,   // args
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("Failed to declare queue: %v", err)

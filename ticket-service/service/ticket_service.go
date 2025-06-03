@@ -45,7 +45,7 @@ func (s *TicketService) AddEvent(ctx context.Context, req *ticket.AddEventReques
 	log.Println("⚙️ [AddEvent] Ricevuta richiesta per evento:", req.Name)
 
 	if req.UserId == "" {
-		log.Println("⚠️ [AddEvent] UserID mancante")
+		log.Println("UserID mancante")
 		return &ticket.AddEventResponse{
 			Success: false,
 			Message: "Missing user ID",
@@ -60,11 +60,11 @@ func (s *TicketService) AddEvent(ctx context.Context, req *ticket.AddEventReques
 
 	err := s.Repo.CreateEvent(ctx, newEvent)
 	if err != nil {
-		log.Printf("❌ [AddEvent] Errore inserimento MongoDB: %v", err)
+		log.Printf("Errore inserimento MongoDB: %v", err)
 		return nil, err
 	}
 
-	log.Println("✅ [AddEvent] Evento aggiunto con successo")
+	log.Println("Evento aggiunto con successo")
 	return &ticket.AddEventResponse{
 		Success: true,
 		Message: "Evento aggiunto con successo",
@@ -72,7 +72,7 @@ func (s *TicketService) AddEvent(ctx context.Context, req *ticket.AddEventReques
 }
 
 func (s *TicketService) DeleteEvent(ctx context.Context, req *ticket.DeleteEventRequest) (*ticket.DeleteEventResponse, error) {
-	log.Printf("⚙️ [DeleteEvent] Richiesta cancellazione per ID: %s", req.EventId)
+	log.Printf("Richiesta cancellazione per ID: %s", req.EventId)
 
 	if req.UserId == "" || req.EventId == "" {
 		return &ticket.DeleteEventResponse{
@@ -83,73 +83,21 @@ func (s *TicketService) DeleteEvent(ctx context.Context, req *ticket.DeleteEvent
 
 	err := s.Repo.DeleteEventByID(ctx, req.EventId)
 	if err != nil {
-		log.Printf("❌ [DeleteEvent] Errore durante la cancellazione: %v", err)
+		log.Printf("Errore durante la cancellazione: %v", err)
 		return &ticket.DeleteEventResponse{
 			Success: false,
 			Message: fmt.Sprintf("Errore durante la cancellazione: %v", err),
 		}, nil
 	}
 
-	log.Println("✅ [DeleteEvent] Evento cancellato con successo")
+	log.Println("Evento cancellato con successo")
 	return &ticket.DeleteEventResponse{
 		Success: true,
 		Message: "Evento cancellato con successo",
 	}, nil
 }
 
-/*
-	func (s *TicketService) PurchaseTicket(ctx context.Context, req *ticket.PurchaseTicketRequest) (*ticket.PurchaseTicketResponse, error) {
-		success, err := s.Repo.PurchaseTicket(ctx, req.EventId, req.Quantity)
-		if err != nil {
-			log.Printf("❌ Errore MongoDB durante la prenotazione: %v", err)
-			return nil, err
-		}
-		if !success {
-			return &ticket.PurchaseTicketResponse{
-				Success: false,
-				Message: "Biglietti non disponibili",
-			}, nil
-		}
-
-		// 🆔 Genera ID una volta sola
-		eventInstanceId := uuid.New().String()
-
-		// Costruzione evento
-		event := models.TicketReservedEvent{
-			EventId:         req.EventId,
-			UserId:          req.UserId,
-			EventTicketId:   req.EventId,
-			Quantity:        req.Quantity,
-			TotalAmount:     float64(req.Quantity) * 21.0,
-			EventInstanceId: eventInstanceId,
-		}
-
-		// Pubblica evento
-		err = messaging.PublishMessage("ticket-reserved-queue", event)
-		if err != nil {
-			log.Printf("❌ Failed to publish TicketReservedEvent: %v", err)
-
-			// 🔄 Rollback biglietti
-			rollbackErr := s.Repo.RestoreTickets(ctx, req.EventId, req.Quantity)
-			if rollbackErr != nil {
-				log.Printf("⚠️ Errore durante il rollback dei biglietti: %v", rollbackErr)
-			}
-
-			return &ticket.PurchaseTicketResponse{
-				Success: false,
-				Message: "Errore di pubblicazione. Biglietti ripristinati.",
-			}, nil
-		}
-
-		// Tutto OK
-		return &ticket.PurchaseTicketResponse{
-			Success: true,
-			Message: "Ticket reserved successfully, waiting for payment...",
-		}, nil
-	}
-*/
 func (s *TicketService) PurchaseTicket(ctx context.Context, req *ticket.PurchaseTicketRequest) (*ticket.PurchaseTicketResponse, error) {
-	// 1. Genera ID evento UNA sola volta
 	eventInstanceId := uuid.New().String()
 
 	event := models.TicketReservedEvent{
@@ -161,31 +109,28 @@ func (s *TicketService) PurchaseTicket(ctx context.Context, req *ticket.Purchase
 		EventInstanceId: eventInstanceId,
 	}
 
-	// 2. Tenta il publish
 	err := messaging.PublishMessage("ticket-reserved-queue", event)
 	if err != nil {
-		log.Printf("❌ Fallito publish TicketReservedEvent: %v", err)
+		log.Printf("Fallito publish TicketReservedEvent: %v", err)
 		return &ticket.PurchaseTicketResponse{
 			Success: false,
 			Message: "Errore nel sistema, riprova più tardi.",
 		}, nil
 	}
 
-	// 3. Solo se pubblicato → scala i biglietti
 	success, err := s.Repo.PurchaseTicket(ctx, req.EventId, req.Quantity)
 	if err != nil {
-		log.Printf("❌ Errore MongoDB durante scalatura: %v", err)
+		log.Printf("Errore MongoDB durante scalatura: %v", err)
 		return nil, err
 	}
 	if !success {
-		log.Printf("❌ Biglietti insufficienti per l'evento %s", req.EventId)
+		log.Printf("Biglietti insufficienti per l'evento %s", req.EventId)
 		return &ticket.PurchaseTicketResponse{
 			Success: false,
 			Message: "Biglietti esauriti",
 		}, nil
 	}
 
-	// 4. Tutto OK
 	return &ticket.PurchaseTicketResponse{
 		Success: true,
 		Message: "Biglietti prenotati, in attesa di pagamento...",

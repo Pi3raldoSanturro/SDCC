@@ -22,39 +22,37 @@ func connectMongo() *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://mongo-user:27017")
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-		log.Fatalf("❌ MongoDB connection error: %v", err)
+		log.Fatalf("MongoDB connection error: %v", err)
 	}
 
 	if err := client.Ping(context.Background(), readpref.Primary()); err != nil {
-		log.Fatalf("❌ MongoDB ping error: %v", err)
+		log.Fatalf("MongoDB ping error: %v", err)
 	}
 
-	log.Println("✅ Connessione a MongoDB (user-service) riuscita.")
+	log.Println("Connessione a MongoDB (user-service) riuscita.")
 	return client.Database("userdb")
 }
 
 func connectAuthService() auth.AuthServiceClient {
 	conn, err := grpc.Dial("auth-service:50054", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("❌ Connessione a Auth-Service fallita: %v", err)
+		log.Fatalf("Connessione a Auth-Service fallita: %v", err)
 	}
-	log.Println("✅ Connessione a Auth-Service riuscita.")
+	log.Println("Connessione a Auth-Service riuscita.")
 	return auth.NewAuthServiceClient(conn)
 }
 
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("❌ failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 
 	db := connectMongo()
 	repo := repository.NewUserRepository(db)
 
-	// 🔗 Client per Auth-Service
 	authClient := connectAuthService()
 
-	// ⛓️ Avvio gRPC Server
 	srv := grpc.NewServer()
 	user.RegisterUserServiceServer(srv, &service.UserService{
 		Repo:       repo,
@@ -62,8 +60,8 @@ func main() {
 	})
 	reflection.Register(srv)
 
-	log.Println("🚀 User Service is running on port 50051")
+	log.Println("User Service is running on port 50051")
 	if err := srv.Serve(lis); err != nil {
-		log.Fatalf("❌ failed to serve: %v", err)
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

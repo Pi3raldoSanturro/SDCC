@@ -1,104 +1,3 @@
-/*
-package service
-
-import (
-
-	"context"
-	"encoding/json"
-	"log"
-	"payment-service/messaging"
-	"payment-service/models"
-	"payment-service/proto"
-	"payment-service/repository"
-
-	"github.com/google/uuid"
-	"github.com/rabbitmq/amqp091-go"
-
-)
-
-	type PaymentService struct {
-		Repo          *repository.PaymentRepository
-		RabbitChannel *amqp091.Channel
-		payment.UnimplementedPaymentServiceServer
-	}
-
-	func (s *PaymentService) Ping(ctx context.Context, req *payment.PingRequest) (*payment.PingResponse, error) {
-		return &payment.PingResponse{Message: "Payment Service Pong!"}, nil
-	}
-
-	func (s *PaymentService) ProcessPayment(ctx context.Context, req *payment.PaymentRequest) (*payment.PaymentResponse, error) {
-		transactionID := uuid.New().String()
-
-		paymentRecord := &models.Payment{
-			UserID:        req.UserId,
-			Amount:        req.Amount,
-			Success:       true,
-			TransactionId: transactionID,
-		}
-
-		err := s.Repo.CreatePayment(ctx, paymentRecord)
-		if err != nil {
-			return nil, err
-		}
-
-		return &payment.PaymentResponse{
-			Success:       true,
-			TransactionId: transactionID,
-			Message:       "Payment processed successfully",
-		}, nil
-	}
-
-	func (s *PaymentService) StartConsumingTicketReservedEvents() {
-		msgs, err := messaging.SubscribeToQueue(s.RabbitChannel, "ticket-reserved-queue")
-		if err != nil {
-			log.Fatalf("Failed to subscribe to ticket-reserved-queue: %v", err)
-		}
-
-		go func() {
-			for d := range msgs {
-				var event models.TicketReservedEvent
-				if err := json.Unmarshal(d.Body, &event); err != nil {
-					log.Printf("Error decoding TicketReservedEvent: %v", err)
-					continue
-				}
-
-				log.Printf("Received TicketReservedEvent: %+v", event)
-
-				transactionID := uuid.New().String()
-
-				paymentSucceeded := false
-				if int(event.TotalAmount)%2 == 0 {
-					paymentSucceeded = true
-				}
-
-				log.Printf("Simulated payment result: %v", paymentSucceeded)
-
-				paymentRecord := &models.Payment{
-					UserID:        event.UserId,
-					Amount:        event.TotalAmount,
-					Success:       paymentSucceeded,
-					TransactionId: transactionID,
-				}
-
-				if err := s.Repo.CreatePayment(context.Background(), paymentRecord); err != nil {
-					log.Printf("Error saving payment: %v", err)
-					continue
-				}
-
-				paymentEvent := map[string]interface{}{
-					"eventId":  event.EventTicketId,
-					"userId":   event.UserId,
-					"success":  paymentSucceeded,
-					"quantity": event.Quantity,
-				}
-
-				if err := messaging.PublishMessage(s.RabbitChannel, "payment-events-queue", paymentEvent); err != nil {
-					log.Printf("Error publishing PaymentEvent: %v", err)
-				}
-			}
-		}()
-	}
-*/
 package service
 
 import (
@@ -161,44 +60,44 @@ func (s *PaymentService) StartConsumingTicketReservedEvents() {
 
 			msgs, err := messaging.SubscribeToQueue(ch, "ticket-reserved-queue")
 			if err != nil {
-				log.Printf("❌ Errore subscribe ticket-reserved-queue: %v", err)
+				log.Printf("Errore subscribe ticket-reserved-queue: %v", err)
 				time.Sleep(3 * time.Second)
 				continue
 			}
 
-			log.Println("📥 In ascolto su 'ticket-reserved-queue'...")
+			log.Println("In ascolto su 'ticket-reserved-queue'...")
 		consumeLoop:
 			for {
 				select {
 				case d, ok := <-msgs:
 					if !ok {
-						log.Println("⚠️ Canale chiuso. Restart consumer...")
+						log.Println("Canale chiuso. Restart consumer...")
 						break consumeLoop
 					}
 
 					var event models.TicketReservedEvent
 					if err := json.Unmarshal(d.Body, &event); err != nil {
-						log.Printf("❌ Errore decoding evento: %v", err)
+						log.Printf("Errore decoding evento: %v", err)
 						continue
 					}
 
-					// ✅ De-duplicazione basata su EventInstanceId
+					//De-duplicazione basata su EventInstanceId
 					duplicate, err := s.Repo.ExistsByEventInstanceID(context.Background(), event.EventInstanceId)
 					if err != nil {
-						log.Printf("❌ Errore controllo duplicato: %v", err)
+						log.Printf("Errore controllo duplicato: %v", err)
 						continue
 					}
 					if duplicate {
-						log.Printf("⚠️ Evento duplicato ignorato: %s", event.EventInstanceId)
+						log.Printf("Evento duplicato ignorato: %s", event.EventInstanceId)
 						continue
 					}
 
-					log.Printf("🎫 Evento da processare: %+v", event)
+					log.Printf("Evento da processare: %+v", event)
 
 					transactionID := uuid.New().String()
-					paymentSucceeded := int(event.TotalAmount)%2 == 0
+					paymentSucceeded := true
 
-					log.Printf("💳 Simulazione pagamento: %v", paymentSucceeded)
+					log.Printf("Simulazione pagamento: %v", paymentSucceeded)
 
 					paymentRecord := &models.Payment{
 						UserID:          event.UserId,
@@ -209,7 +108,7 @@ func (s *PaymentService) StartConsumingTicketReservedEvents() {
 					}
 
 					if err := s.Repo.CreatePayment(context.Background(), paymentRecord); err != nil {
-						log.Printf("❌ Errore salvataggio pagamento: %v", err)
+						log.Printf("Errore salvataggio pagamento: %v", err)
 						continue
 					}
 
@@ -222,10 +121,10 @@ func (s *PaymentService) StartConsumingTicketReservedEvents() {
 					}
 
 					if err := messaging.PublishMessage("payment-events-queue", paymentEvent); err != nil {
-						log.Printf("❌ Errore pubblicazione PaymentEvent: %v", err)
+						log.Printf("Errore pubblicazione PaymentEvent: %v", err)
 					}
 				case <-closeChan:
-					log.Println("🔌 Connessione chiusa da RabbitMQ. Restart consumer...")
+					log.Println("Connessione chiusa da RabbitMQ. Restart consumer...")
 					break consumeLoop
 				}
 			}

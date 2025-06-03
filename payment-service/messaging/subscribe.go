@@ -8,10 +8,10 @@ func SubscribeToQueue(channel *amqp091.Channel, queueName string) (<-chan amqp09
 	msgs, err := channel.Consume(
 		queueName,
 		"",
-		true,  // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
+		true,
+		false,
+		false,
+		false,
 		nil,
 	)
 	if err != nil {

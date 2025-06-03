@@ -16,7 +16,7 @@ type AuthServer struct {
 func (s *AuthServer) GenerateToken(ctx context.Context, req *proto.AuthRequest) (*proto.AuthResponse, error) {
 	jwtToken, err := token.GenerateJWT(req.UserId, req.Username, req.Role)
 	if err != nil {
-		log.Printf("❌ Errore nella generazione del token: %v", err)
+		log.Printf("Errore nella generazione del token: %v", err)
 		return nil, err
 	}
 	return &proto.AuthResponse{Token: jwtToken}, nil

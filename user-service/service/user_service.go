@@ -1,79 +1,3 @@
-/*
-package service
-
-import (
-	"context"
-	"user-service/models"
-	"user-service/proto/user"
-	"user-service/repository"
-)
-
-type UserService struct {
-	Repo *repository.UserRepository
-	user.UnimplementedUserServiceServer
-}
-
-func (s *UserService) Ping(ctx context.Context, req *user.PingRequest) (*user.PingResponse, error) {
-	return &user.PingResponse{Message: "User Service Pong!"}, nil
-}
-
-func (s *UserService) Register(ctx context.Context, req *user.RegisterRequest) (*user.RegisterResponse, error) {
-	exists, err := s.Repo.UserExists(ctx, req.Username)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		return &user.RegisterResponse{Message: "Username already exists"}, nil
-	}
-
-	role := req.Role
-	if role != "admin" {
-		role = "user"
-	}
-
-	newUser := &models.User{
-		Username: req.Username,
-		Password: req.Password,
-		Role:     role,
-	}
-
-	err = s.Repo.CreateUser(ctx, newUser)
-	if err != nil {
-		return nil, err
-	}
-
-	return &user.RegisterResponse{
-		UserId:  newUser.ID,
-		Message: "Registration successful",
-	}, nil
-}
-
-func (s *UserService) Login(ctx context.Context, req *user.LoginRequest) (*user.LoginResponse, error) {
-	userFound, err := s.Repo.FindByUsername(ctx, req.Username)
-	if err != nil {
-		return &user.LoginResponse{
-			Success: false,
-			Message: "User not found",
-		}, nil
-	}
-
-	if userFound.Password != req.Password {
-		return &user.LoginResponse{
-			Success: false,
-			Message: "Incorrect password",
-		}, nil
-	}
-
-	return &user.LoginResponse{
-		UserId:  userFound.ID,
-		Success: true,
-		Message: "Login successful",
-		Role:    userFound.Role,
-	}, nil
-}
-
-*/
-
 package service
 
 import (
@@ -126,11 +50,11 @@ func (s *UserService) Register(ctx context.Context, req *user.RegisterRequest) (
 	// 🔐 Genera JWT con AuthService
 	tokenResp, err := s.AuthClient.GenerateToken(ctx, &authpb.AuthRequest{
 		UserId:   newUser.ID,
-		Username: newUser.Username, // ✅ aggiungi questo
+		Username: newUser.Username,
 		Role:     newUser.Role,
 	})
 	if err != nil {
-		log.Printf("❌ Errore generazione token JWT in Register: %v", err)
+		log.Printf("Errore generazione token JWT in Register: %v", err)
 		return &user.RegisterResponse{
 			UserId:  newUser.ID,
 			Message: "Registered but token generation failed",
@@ -163,11 +87,11 @@ func (s *UserService) Login(ctx context.Context, req *user.LoginRequest) (*user.
 	// 🔐 Chiede token a auth-service
 	tokenResp, err := s.AuthClient.GenerateToken(ctx, &authpb.AuthRequest{
 		UserId:   userFound.ID,
-		Username: userFound.Username, // ✅ aggiungi anche qui
+		Username: userFound.Username,
 		Role:     userFound.Role,
 	})
 	if err != nil {
-		log.Printf("❌ Errore generazione token JWT in Login: %v", err)
+		log.Printf("Errore generazione token JWT in Login: %v", err)
 		return &user.LoginResponse{
 			UserId:  userFound.ID,
 			Success: false,

@@ -18,7 +18,7 @@ type EventRepository struct {
 func NewEventRepository(db *mongo.Database) *EventRepository {
 	return &EventRepository{
 		collection:    db.Collection("events"),
-		processedColl: db.Collection("processed_events"), // ✅ nuova collezione
+		processedColl: db.Collection("processed_events"),
 	}
 }
 
@@ -105,10 +105,6 @@ func (r *EventRepository) DeleteEventByID(ctx context.Context, id string) error 
 	_, err = r.collection.DeleteOne(ctx, filter)
 	return err
 }
-
-//
-// ✅ DE-DUPLICAZIONE EVENTI PAGAMENTO
-//
 
 func (r *EventRepository) HasProcessedEvent(ctx context.Context, eventInstanceID string) (bool, error) {
 	filter := bson.M{"eventInstanceId": eventInstanceID}

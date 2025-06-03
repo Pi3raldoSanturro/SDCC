@@ -14,7 +14,7 @@ import (
 func main() {
 	listener, err := net.Listen("tcp", ":50054")
 	if err != nil {
-		log.Fatalf("❌ Impossibile avviare il listener: %v", err)
+		log.Fatalf("Impossibile avviare il listener: %v", err)
 	}
 
 	server := grpc.NewServer()
@@ -22,8 +22,8 @@ func main() {
 
 	reflection.Register(server)
 
-	log.Println("🚀 Auth Service in ascolto sulla porta 50054")
+	log.Println("Auth Service in ascolto sulla porta 50054")
 	if err := server.Serve(listener); err != nil {
-		log.Fatalf("❌ Errore nell'avvio del server gRPC: %v", err)
+		log.Fatalf("Errore nell'avvio del server gRPC: %v", err)
 	}
 }

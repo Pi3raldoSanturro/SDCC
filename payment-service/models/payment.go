@@ -6,6 +6,5 @@ type Payment struct {
 	Amount          float64 `bson:"amount"`
 	Success         bool    `bson:"success"`
 	TransactionId   string  `bson:"transactionId"`
-	EventInstanceId string  `bson:"eventInstanceId"` // 🆕 per de-duplicazione
-
+	EventInstanceId string  `bson:"eventInstanceId"`
 }
