@@ -1,4 +1,4 @@
-# SDCC_Progetto3 – Sistema di Biglietteria Distribuito a Microservizi
+# SDCC – Sistema di Biglietteria Distribuito a Microservizi
 
 Questo progetto implementa un'applicazione distribuita per la **gestione di biglietti per eventi** usando un'architettura **a microservizi**, con comunicazione via **gRPC** e orchestrazione asincrona tramite **RabbitMQ** (pattern Saga - choreography).
 
